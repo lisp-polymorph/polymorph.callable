@@ -13,7 +13,9 @@
 
 (defpolymorph-compiler-macro funcall (function &rest) (function &rest args
                                                                 &environment env)
-  (let* ((fun-type (%form-type function env))
+
+  (let* ((function (form-expand function))
+         (fun-type (%form-type function env))
          (return-type (if (listp fun-type)
                           (third fun-type)
                           t)))
