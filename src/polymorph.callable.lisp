@@ -2,7 +2,27 @@
 
 (in-package #:polymorph.callable)
 
+(defun function-return-type (form env)
+  "Determine the return type of a function.
 
+FORM is a form. The type of FORM is determined and if it is of a
+FUNCTION TYPE, the function's return type is returned, otherwise T is
+returned.
+
+ENV is the environment in which FORM is found.
+
+Returns the function return type, if the type of FORM is a function."
+
+  (with-type-info (whole (type params) env)
+      form
+
+    (if (and (eq type 'function)
+             (length= params 2))
+
+        (let ((type (second params)))
+          (if (eq type '*) t type))
+
+        t)))
 
 (define-polymorphic-function funcall (function &rest arguments) :overwrite t)
 
@@ -15,17 +35,12 @@
                                                                 &environment env)
 
   (let* ((function (form-expand function))
-         (fun-type (%form-type function env))
-         (return-type (if (listp fun-type)
-                          (third fun-type)
-                          t)))
-    (if (listp function)
-        (cond ((eql (car function) 'function)
-               `(the ,return-type (,(cadr function) ,@args)))
-              ((eql (car function) 'lambda)
-               `(the ,return-type (,function ,@args)))
-              (t `(the ,return-type (funcall ,function ,@args))))
-        `(the ,return-type (funcall ,function ,@args)))))
+         (return-type (function-return-type function env)))
+
+    `(the ,return-type
+          ,(if (typep function '(or symbol (cons (eql lambda) cons)))
+               (cons function args)
+               `(cl:funcall ,function ,@args)))))
 
 
 (defpolymorph funcall ((function symbol) &rest args) t
