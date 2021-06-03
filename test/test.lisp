@@ -24,6 +24,7 @@
 (defun (setf my-car) (value cons)
   (setf (car cons) value))
 
+(declaim (inline my-add my-car))
 
 ;;; Tests
 
@@ -50,6 +51,8 @@
   (is (= 3 (funcall (lambda (x) (/ x 4)) 12))))
 
 (test-optimize funcall-symbol
+  (declare (inline my-car))
+
   (let ((my-add 'my-add))
     (flet ((my-car (x)
              (error "Gotcha. Lexical MY-CAR function called instead of global function.")))
