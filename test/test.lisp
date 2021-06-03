@@ -15,6 +15,8 @@
 
 ;;; Definitions
 
+(declaim (inline my-add my-car))
+
 (defun my-add (x &rest xs)
   (reduce #'+ xs :initial-value x))
 
@@ -23,8 +25,6 @@
 
 (defun (setf my-car) (value cons)
   (setf (car cons) value))
-
-(declaim (inline my-add my-car))
 
 ;;; Tests
 
