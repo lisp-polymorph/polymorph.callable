@@ -48,3 +48,12 @@
 
   (is (= 110 (funcall #'(lambda (a b) (* a b)) 10 11)))
   (is (= 3 (funcall (lambda (x) (/ x 4)) 12))))
+
+(test-optimize funcall-symbol
+  (let ((my-add 'my-add))
+    (flet ((my-car (x)
+             (error "Gotcha. Lexical MY-CAR function called instead of global function.")))
+
+      (is (= 15 (funcall 'my-add 4 5 6)))
+      (is (= 30 (funcall my-add 10 20)))
+      (is (eq 'c (funcall 'my-car '(c d e)))))))
