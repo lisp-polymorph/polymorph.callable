@@ -49,13 +49,29 @@ Returns the function return type, if the type of FORM is a function."
 
 (defpolymorph-compiler-macro funcall (symbol &rest) (function &rest args
                                                               &environment env)
-  (if (and (constantp function env) (listp function))
-      (let* ((fun-type (%form-type `(function ,(second function)) env))
-             (return-type (if (listp fun-type)
-                              (third fun-type)
-                              t)))
-        `(the ,return-type (,(second function) ,@args)))
-      `(funcall ,function ,@args)))
+  (with-type-info (whole (type type-params) env)
+      function
+
+    (or
+     (when (and (eql type 'eql)
+                (length= type-params 1)
+                (symbolp (first type-params)))
+
+       (let* ((name (first type-params))
+              (lexical-p (nth-value 1 (cltl2:function-information name env))))
+
+         ;; Check that there isn't a lexical definition for a function
+         ;; of the same name.
+         ;;
+         ;; For correctness, this requires good CLTL2 support, either
+         ;; native or that the code is contained in the
+         ;; CL-ENVIRONMENTS-CL code walker package.
+
+         (unless lexical-p
+           `(the ,(function-return-type `(function ,name) env)
+                 (,name ,@args)))))
+
+     `(cl:funcall ,function ,@args))))
 
 
 
