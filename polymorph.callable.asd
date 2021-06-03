@@ -12,4 +12,21 @@
                 :serial t
                 :components
                 ((:file "package")
-                 (:file "polymorph.callable")))))
+                 (:file "polymorph.callable"))))
+
+  :in-order-to ((asdf:test-op (asdf:test-op :polymorph.callable/test))))
+
+(asdf:defsystem #:polymorph.callable/test
+  :description "Unit tests for polymorph.callable"
+  :license "MIT"
+  :serial t
+  :depends-on (#:polymorph.callable #:fiveam)
+  :components ((:module
+                "test"
+                :serial t
+                :components
+                ((:file "util")
+		 (:file "test"))))
+
+  :perform (test-op (o s)
+             (uiop:symbol-call '#:polymorph.callable/test '#:test-polymorph.callable)))
