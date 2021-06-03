@@ -57,19 +57,25 @@ Returns the function return type, if the type of FORM is a function."
                 (length= type-params 1)
                 (symbolp (first type-params)))
 
-       (let* ((name (first type-params))
-              (lexical-p (nth-value 1 (cltl2:function-information name env))))
+       (let* ((name (first type-params)))
 
-         ;; Check that there isn't a lexical definition for a function
-         ;; of the same name.
-         ;;
          ;; For correctness, this requires good CLTL2 support, either
          ;; native or that the code is contained in the
          ;; CL-ENVIRONMENTS-CL code walker package.
 
-         (unless lexical-p
-           `(the ,(function-return-type `(function ,name) env)
-                 (,name ,@args)))))
+         (multiple-value-bind (type lexical-p info)
+             (cltl2:function-information name env)
+
+           ;; Check that there isn't a lexical definition for a
+           ;; function of the same name, and that the function is
+           ;; declared inline.
+
+           (when (and (eq type :function)
+                      (not lexical-p)
+                      (eq (cdr (assoc 'inline info)) 'inline))
+
+             `(the ,(function-return-type `(function ,name) env)
+                   (,name ,@args))))))
 
      `(cl:funcall ,function ,@args))))
 

@@ -53,6 +53,7 @@
   (let ((my-add 'my-add))
     (flet ((my-car (x)
              (error "Gotcha. Lexical MY-CAR function called instead of global function.")))
+      (declare (inline my-car))
 
       (is (= 15 (funcall 'my-add 4 5 6)))
       (is (= 30 (funcall my-add 10 20)))
