@@ -67,15 +67,21 @@ Returns the function return type, if the type of FORM is a function."
              (cltl2:function-information name env)
 
            ;; Check that there isn't a lexical definition for a
-           ;; function of the same name, and that the function is
-           ;; declared inline.
+           ;; function of the same name.
 
-           (when (and (eq type :function)
-                      (not lexical-p)
-                      (eq (cdr (assoc 'inline info)) 'inline))
+           (if (and (eq type :function)
+                    (not lexical-p))
 
-             `(the ,(function-return-type `(function ,name) env)
-                   (,name ,@args))))))
+               ;; Check that the function is declared inline
+
+               `(the ,(function-return-type `(function ,name) env)
+                     ,(if (eq (cdr (assoc 'inline info)) 'inline)
+                          `(,name ,@args)
+                          `(cl:funcall ,function ,@args)))
+
+               ;; Get return type in global environment
+               `(the ,(function-return-type `(function ,name) nil)
+                     (cl:funcall ,function ,@args))))))
 
      `(cl:funcall ,function ,@args))))
 
