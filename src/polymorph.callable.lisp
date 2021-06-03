@@ -44,7 +44,7 @@ Returns the function return type, if the type of FORM is a function."
 
 
 (defpolymorph funcall ((function symbol) &rest args) t
-  (cl:apply (fdefinition function) args))
+  (cl:apply function args))
 
 
 (defpolymorph-compiler-macro funcall (symbol &rest) (function &rest args
