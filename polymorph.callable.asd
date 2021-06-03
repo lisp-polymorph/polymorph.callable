@@ -8,7 +8,6 @@
   :serial t
   :depends-on (#:compiler-macro
                #:cl-environments
-               #:trivial-form-ctype
                #:introspect-ctype
                #:polymorph.utility)
   :components ((:module
