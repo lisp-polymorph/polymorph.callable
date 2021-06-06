@@ -53,7 +53,8 @@ Returns the function return type, if the type of FORM is a function."
       function
 
     (or
-     (when (and (eql type 'eql)
+     (when (and (constantp function env)
+                (eql type 'eql)
                 (length= type-params 1)
                 (symbolp (first type-params)))
 
