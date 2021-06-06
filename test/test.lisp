@@ -39,6 +39,14 @@
     (is (= 6 (funcall #'my-add 1 2 3)))
     (is (eq 'x (funcall f '(x y))))))
 
+(test-optimize funcall-local-function
+  "Test FUNCALL on a local FUNCTION"
+
+  (flet ((my-add (x) (1+ x)))
+    (let ((f #'my-add))
+      (is (= 2 (funcall #'my-add 1)))
+      (is (= 5 (funcall f 4))))))
+
 (test-optimize funcall-setf-function
   "Test FUNCALL on (SETF ...) function"
 
@@ -74,6 +82,14 @@
   (let ((f #'my-add))
     (is (= 12 (apply #'my-add 1 2 3 '(4 2))))
     (is (= 18 (apply f 1 2 3 4 '(5 3))))))
+
+(test-optimize apply-local-function
+  "Test APPLY on a local FUNCTION"
+
+  (flet ((my-add (x) (1+ x)))
+    (let ((f #'my-add))
+      (is (= 2 (apply #'my-add '(1))))
+      (is (= 5 (apply f '(4)))))))
 
 (test-optimize apply-setf-function
   "Test APPLY on (SETF ...) function"
