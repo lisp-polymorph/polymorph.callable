@@ -98,10 +98,10 @@ Returns the function return type, if the type of FORM is a function."
 
 (defpolymorph-compiler-macro apply (function t &rest) (function arg &rest args
                                                                 &environment env)
-  (let* ((fun-type (%form-type function env))
-         (return-type (if (listp fun-type)
-                          (third fun-type)
-                          t)))
+
+  (let* ((function (form-expand function))
+         (return-type (function-return-type function env)))
+
     `(the ,return-type (cl:apply ,function ,arg ,@args))))
 
 
@@ -111,10 +111,16 @@ Returns the function return type, if the type of FORM is a function."
 
 (defpolymorph-compiler-macro apply (symbol t &rest) (function arg &rest args
                                                               &environment env)
-  (if (and (constantp function env) (listp function))
-      (let* ((fun-type (%form-type `(function ,(second function)) env))
-             (return-type (if (listp fun-type)
-                              (third fun-type)
-                              t)))
-        `(the ,return-type (cl:apply ,function ,arg ,@args)))
-      `(cl:apply ,function ,arg ,@args)))
+
+  (with-type-info (whole (type type-params) env)
+      function
+
+    (if (and (constantp function env)
+             (eql type 'eql)
+             (length= type-params 1)
+             (symbolp (first type-params)))
+
+        `(the ,(function-return-type `(function ,(first type-params)) nil)
+              (cl:apply ,function ,arg ,@args))
+
+        `(cl:apply ,function ,arg ,@args))))
