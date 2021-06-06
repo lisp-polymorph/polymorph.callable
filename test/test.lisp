@@ -17,6 +17,8 @@
 
 (declaim (inline my-add my-car))
 
+(declaim (ftype (function * number) my-add))
+
 (defun my-add (x &rest xs)
   (reduce #'+ xs :initial-value x))
 
