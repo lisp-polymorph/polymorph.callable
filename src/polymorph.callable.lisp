@@ -13,16 +13,13 @@ ENV is the environment in which FORM is found.
 
 Returns the function return type, if the type of FORM is a function."
 
-  (with-type-info (whole (type params) env)
+  (with-type-info (whole (type &optional params (return-type 't)) env)
       form
+    (declare (ignore params))
 
-    (if (and (eq type 'function)
-             (length= params 2))
-
-        (let ((type (second params)))
-          (if (eq type '*) t type))
-
-        t)))
+    (if (eq return-type '*)
+        t
+        return-type)))
 
 (define-polymorphic-function funcall (function &rest arguments) :overwrite t)
 
@@ -49,40 +46,36 @@ Returns the function return type, if the type of FORM is a function."
 
 (defpolymorph-compiler-macro funcall (symbol &rest) (function &rest args
                                                               &environment env)
-  (with-type-info (whole (type type-params) env)
+  (with-type-info (_ (type &optional name) env)
       function
 
     (or
      (when (and (constantp function env)
-                (eql type 'eql)
-                (length= type-params 1)
-                (symbolp (first type-params)))
+                (eql type 'eql))
 
-       (let* ((name (first type-params)))
+       ;; For correctness, this requires good CLTL2 support, either
+       ;; native or that the code is contained in the
+       ;; CL-ENVIRONMENTS-CL code walker package.
 
-         ;; For correctness, this requires good CLTL2 support, either
-         ;; native or that the code is contained in the
-         ;; CL-ENVIRONMENTS-CL code walker package.
+       (multiple-value-bind (type lexical-p info)
+           (cltl2:function-information name env)
 
-         (multiple-value-bind (type lexical-p info)
-             (cltl2:function-information name env)
+         ;; Check that there isn't a lexical definition for a
+         ;; function of the same name.
 
-           ;; Check that there isn't a lexical definition for a
-           ;; function of the same name.
+         (if (and (eq type :function)
+                  (not lexical-p))
 
-           (if (and (eq type :function)
-                    (not lexical-p))
+             ;; Check that the function is declared inline
 
-               ;; Check that the function is declared inline
+             `(the ,(function-return-type `(function ,name) env)
+                   ,(if (eq (cdr (assoc 'inline info)) 'inline)
+                        `(,name ,@args)
+                        `(cl:funcall ,function ,@args)))
 
-               `(the ,(function-return-type `(function ,name) env)
-                     ,(if (eq (cdr (assoc 'inline info)) 'inline)
-                          `(,name ,@args)
-                          `(cl:funcall ,function ,@args)))
-
-               ;; Get return type in global environment
-               `(the ,(function-return-type `(function ,name) nil)
-                     (cl:funcall ,function ,@args))))))
+             ;; Get return type in global environment
+             `(the ,(function-return-type `(function ,name) nil)
+                   (cl:funcall ,function ,@args)))))
 
      `(cl:funcall ,function ,@args))))
 
@@ -112,15 +105,13 @@ Returns the function return type, if the type of FORM is a function."
 (defpolymorph-compiler-macro apply (symbol t &rest) (function arg &rest args
                                                               &environment env)
 
-  (with-type-info (whole (type type-params) env)
+  (with-type-info (_ (type &optional name) env)
       function
 
     (if (and (constantp function env)
-             (eql type 'eql)
-             (length= type-params 1)
-             (symbolp (first type-params)))
+             (eql type 'eql))
 
-        `(the ,(function-return-type `(function ,(first type-params)) nil)
+        `(the ,(function-return-type `(function ,name) nil)
               (cl:apply ,function ,arg ,@args))
 
         `(cl:apply ,function ,arg ,@args))))
