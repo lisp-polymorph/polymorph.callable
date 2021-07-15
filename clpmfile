@@ -1,0 +1,11 @@
+;;; -*- Mode: common-lisp; -*-
+(:api-version "0.3")
+
+(:source "quicklisp" :url "https://quicklisp.common-lisp-project-index.org/" :type :ql-clpi)
+
+(:asd "polymorph.callable.asd")
+
+(:system "cl-environments")
+(:github "polymorph.utility" :path "lisp-polymorph/polymorph.utility" :branch "master" :systems ("polymorph.utility"))
+(:github "compiler-macro" :path "Bike/compiler-macro" :branch "master" :systems ("compiler-macro"))
+(:github "introspect-ctype" :path "lisp-polymorph/introspect-ctype" :branch "master" :systems ("introspect-ctype"))
