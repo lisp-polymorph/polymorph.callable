@@ -4,12 +4,10 @@
   :description "Callable interface for polymorph.stl"
   :author "Commander Thrashdin"
   :license  "MIT"
-  :version "0.0.1"
+  :version "0.2"
   :serial t
-  :depends-on (#:compiler-macro
-               #:cl-environments
-               #:introspect-ctype
-               #:polymorph.utility)
+  :depends-on (#:introspect-ctype
+               #:polymorphic-functions)
   :components ((:module
                 "src"
                 :serial t

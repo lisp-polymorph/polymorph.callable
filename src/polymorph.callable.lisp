@@ -34,10 +34,10 @@ Returns the function return type, if the type of FORM is a function."
   (let* ((function (form-expand function))
          (return-type (function-return-type function env)))
 
-    `(the ,return-type
-          ,(if (typep function '(or symbol (cons (eql lambda) cons)))
-               (cons function args)
-               `(cl:funcall ,function ,@args)))))
+    (print `(the ,return-type
+                ,(if (typep function '(cons (eql lambda) cons))
+                     (cons function args)
+                     `(cl:funcall ,function ,@args))))))
 
 
 (defpolymorph funcall ((function symbol) &rest args) t
